@@ -309,7 +309,8 @@ public class ZooKeeperServerMainTest extends ZKTestCase implements Watcher {
     public void testStandalone() throws Exception {
         ClientBase.setupTestEnv();
 
-        final int CLIENT_PORT = PortAssignment.unique();
+//        final int CLIENT_PORT = PortAssignment.unique();
+        final int CLIENT_PORT = 2182;
 
         MainThread main = new MainThread(CLIENT_PORT, true, null);
         main.start();

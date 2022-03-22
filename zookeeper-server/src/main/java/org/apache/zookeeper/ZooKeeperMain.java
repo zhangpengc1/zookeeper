@@ -173,7 +173,7 @@ public class ZooKeeperMain {
         public static final Pattern QUOTED_PATTERN = Pattern.compile("^([\'\"])(.*)(\\1)$");
 
         public MyCommandOptions() {
-            options.put("server", "localhost:2181");
+            options.put("server", "localhost:2182");
             options.put("timeout", "30000");
         }
 
