@@ -103,6 +103,7 @@ public class DatadirCleanupManager {
         }
 
         timer = new Timer("PurgeTask", true);
+        // Purge-清除
         TimerTask task = new PurgeTask(dataLogDir, snapDir, snapRetainCount);
         timer.scheduleAtFixedRate(task, 0, TimeUnit.HOURS.toMillis(purgeInterval));
 

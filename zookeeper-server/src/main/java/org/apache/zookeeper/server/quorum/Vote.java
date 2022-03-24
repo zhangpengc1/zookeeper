@@ -25,8 +25,12 @@ public class Vote {
     public Vote(long id, long zxid) {
         this.version = 0x0;
         this.id = id;
+        // 事务请求的唯一标记，由leader服务器负责进行分配。由2部分构成，高32位是peerEpoch，
+        // 低32位是请求的计数，从0开始。所以由zxid我们就可以知道该请求是哪个轮次的，并且是该轮次的第几个请求。
         this.zxid = zxid;
+        // 每执行一次leader选举，electionEpoch就会自增，用来标记leader选举的轮次
         this.electionEpoch = -1;
+        // 每次leader选举完成之后，都会选举出一个新的peerEpoch，用来标记事务请求所属的轮次
         this.peerEpoch = -1;
         this.state = ServerState.LOOKING;
     }
@@ -146,7 +150,7 @@ public class Vote {
             if ((version > 0x0) ^ (other.version > 0x0)) {
                 return id == other.id;
             } else {
-                return (id == other.id && peerEpoch == other.peerEpoch);
+                return (id == other.id &&  peerEpoch == other.peerEpoch);
             }
         }
     }

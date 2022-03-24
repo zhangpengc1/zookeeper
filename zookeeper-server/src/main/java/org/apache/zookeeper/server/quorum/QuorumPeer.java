@@ -1076,16 +1076,21 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         if (!getView().containsKey(myid)) {
             throw new RuntimeException("My id " + myid + " not in the peer list");
         }
+        // 加载数据
         loadDataBase();
+        // 和通信有关？暴露一个2181端口？。调用NIOServerCnxnFactory这个类去启动一个线程
         startServerCnxnFactory();
         try {
+            // todo
             adminServer.start();
         } catch (AdminServerException e) {
             LOG.warn("Problem starting AdminServer", e);
             System.out.println(e);
         }
+        // 开始leader选举，启动一个投票的监听，初始化一个选举算法FastLeader
         startLeaderElection();
         startJvmPauseMonitor();
+        // 当前的QuorumPeer继承Thread，调用Thread.start -> QuorumPeer.run
         super.start();
     }
 
@@ -1158,6 +1163,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     }
     public synchronized void startLeaderElection() {
         try {
+            // 构建一个票据
             if (getPeerState() == ServerState.LOOKING) {
                 currentVote = new Vote(myid, getLastLoggedZxid(), getCurrentEpoch());
             }
@@ -1167,6 +1173,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             throw re;
         }
 
+        // 根据electionType创建对应的选举算法，electionType默认值为3，可在配置文件中配置
         this.electionAlg = createElectionAlgorithm(electionType);
     }
 
@@ -1287,6 +1294,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         case 2:
             throw new UnsupportedOperationException("Election Algorithm 2 is not supported.");
         case 3:
+            // 和选举有关，用来接收投票.用来实现领导选举中的网络连接管理功能
             QuorumCnxManager qcm = createCnxnManager();
             QuorumCnxManager oldQcm = qcmRef.getAndSet(qcm);
             if (oldQcm != null) {
@@ -1296,6 +1304,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             QuorumCnxManager.Listener listener = qcm.listener;
             if (listener != null) {
                 listener.start();
+
+                // 创建一个FastLeaderElection选举算法
                 FastLeaderElection fle = new FastLeaderElection(this, qcm);
                 fle.start();
                 le = fle;
@@ -2394,6 +2404,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     /**
      * Updates leader election info to avoid inconsistencies when
      * a new server tries to join the ensemble.
+     *
+     * 更新领导选举信息以避免不一致当一个新的服务器试图加入集合。
      *
      * Here is the inconsistency scenario we try to solve by updating the peer
      * epoch after following leader:

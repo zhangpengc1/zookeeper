@@ -124,7 +124,7 @@ public class QuorumPeerMain {
             config.parse(args[0]);
         }
 
-        // Start and schedule the the purge task
+        // Start and schedule the the purge task，启动一个线程定时对日志进行清理
         DatadirCleanupManager purgeMgr = new DatadirCleanupManager(
             config.getDataDir(),
             config.getDataLogDir(),
@@ -132,11 +132,12 @@ public class QuorumPeerMain {
             config.getPurgeInterval());
         purgeMgr.start();
 
+        // 如果是集群模式走这里，servers就是在zoo.cfg中配置的节点
         if (args.length == 1 && config.isDistributed()) {
             runFromConfig(config);
         } else {
             LOG.warn("Either no config or no quorum defined in config, running in standalone mode");
-            // there is only server in the quorum -- run as standalone
+            // there is only server in the quorum -- run as standalone，否则单机
             ZooKeeperServerMain.main(args);
         }
     }
@@ -162,6 +163,7 @@ public class QuorumPeerMain {
             ServerCnxnFactory cnxnFactory = null;
             ServerCnxnFactory secureCnxnFactory = null;
 
+            // 这个方法里面是根据 ZOOKEEPER_SERVER_CNXN_FACTORY来决定创建NIO server还是Netty Server，而默认情况下，应该是创建一个NIOServerCnxnFactory
             if (config.getClientPortAddress() != null) {
                 cnxnFactory = ServerCnxnFactory.createFactory();
                 cnxnFactory.configure(config.getClientPortAddress(), config.getMaxClientCnxns(), config.getClientPortListenBacklog(), false);
@@ -224,7 +226,9 @@ public class QuorumPeerMain {
                 quorumPeer.setJvmPauseMonitor(new JvmPauseMonitor(config));
             }
 
+            // 启动主线程
             quorumPeer.start();
+
             ZKAuditProvider.addZKStartStopAuditLog();
             quorumPeer.join();
         } catch (InterruptedException e) {
