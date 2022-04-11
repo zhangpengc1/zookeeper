@@ -1565,16 +1565,30 @@ public class ClientCnxn {
         Record request,
         Record response,
         WatchRegistration watchRegistration) throws InterruptedException {
+
         return submitRequest(h, request, response, watchRegistration, null);
     }
 
+    /**
+     * 提交请求
+     *
+     * @param h
+     * @param request
+     * @param response
+     * @param watchRegistration
+     * @param watchDeregistration
+     * @return
+     * @throws InterruptedException
+     */
     public ReplyHeader submitRequest(
         RequestHeader h,
         Record request,
         Record response,
         WatchRegistration watchRegistration,
         WatchDeregistration watchDeregistration) throws InterruptedException {
+
         ReplyHeader r = new ReplyHeader();
+        // 构建Packet
         Packet packet = queuePacket(
             h,
             r,

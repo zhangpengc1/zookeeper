@@ -164,6 +164,7 @@ public class ZooKeeper implements AutoCloseable {
     public static final String SECURE_CLIENT = "zookeeper.client.secure";
 
     protected final ClientCnxn cnxn;
+
     private static final Logger LOG;
 
     static {
@@ -1709,11 +1710,8 @@ public class ZooKeeper implements AutoCloseable {
      * @throws InterruptedException if the transaction is interrupted
      * @throws IllegalArgumentException if an invalid path is specified
      */
-    public String create(
-        final String path,
-        byte[] data,
-        List<ACL> acl,
-        CreateMode createMode) throws KeeperException, InterruptedException {
+    public String create(final String path, byte[] data, List<ACL> acl, CreateMode createMode) throws KeeperException, InterruptedException {
+
         final String clientPath = path;
         PathUtils.validatePath(clientPath, createMode.isSequential());
         EphemeralType.validateTTL(createMode, -1);
@@ -1721,15 +1719,16 @@ public class ZooKeeper implements AutoCloseable {
 
         final String serverPath = prependChroot(clientPath);
 
-        RequestHeader h = new RequestHeader();
-        h.setType(createMode.isContainer() ? ZooDefs.OpCode.createContainer : ZooDefs.OpCode.create);
+        RequestHeader header = new RequestHeader();
+        header.setType(createMode.isContainer() ? ZooDefs.OpCode.createContainer : ZooDefs.OpCode.create);
         CreateRequest request = new CreateRequest();
         CreateResponse response = new CreateResponse();
         request.setData(data);
         request.setFlags(createMode.toFlag());
         request.setPath(serverPath);
         request.setAcl(acl);
-        ReplyHeader r = cnxn.submitRequest(h, request, response, null);
+
+        ReplyHeader r = cnxn.submitRequest(header, request, response, null);
         if (r.getErr() != 0) {
             throw KeeperException.create(KeeperException.Code.get(r.getErr()), clientPath);
         }
