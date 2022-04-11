@@ -34,6 +34,7 @@ import org.apache.zookeeper.data.ACL;
 public class Transaction {
 
     private ZooKeeper zk;
+
     private List<Op> ops = new ArrayList<Op>();
 
     protected Transaction(ZooKeeper zk) {

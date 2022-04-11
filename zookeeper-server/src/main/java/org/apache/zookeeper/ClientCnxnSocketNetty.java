@@ -69,12 +69,19 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
     private static final Logger LOG = LoggerFactory.getLogger(ClientCnxnSocketNetty.class);
 
     private final EventLoopGroup eventLoopGroup;
+
     private Channel channel;
+
     private CountDownLatch firstConnect;
+
     private ChannelFuture connectFuture;
+
     private final Lock connectLock = new ReentrantLock();
+
     private final AtomicBoolean disconnected = new AtomicBoolean();
+
     private final AtomicBoolean needSasl = new AtomicBoolean();
+
     private final Semaphore waitSasl = new Semaphore(0);
 
     private static final AtomicReference<ByteBufAllocator> TEST_ALLOCATOR = new AtomicReference<>(null);
